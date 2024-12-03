@@ -16,8 +16,8 @@ public class MainEntityController {
     }
 
     @GetMapping("api/parents")
-    public List<ViewDTO> getMainEntityData(){
+    public List<ViewDTO> getMainEntityDataSortedByValue1(){
 
-        return mainEntityService.fetchMainEntityData();
+        return mainEntityService.fetchMainEntityDataSortedBy("value1");
     }
 }

@@ -20,8 +20,8 @@ class HibernateORM6BugDemoApplicationTests {
 	private MainEntityService mainEntityService;
 
 	@Test
-	void TestFetchMainEntityDataIsSortedByValue1(){
-		List<ViewDTO> result = mainEntityService.fetchMainEntityData();
+	void TestFetchMainEntityDataIsSortedByValue1() {
+		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("value1");
 
 		assertNotNull(result, "Result should not be null");
 

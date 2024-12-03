@@ -17,7 +17,7 @@ public class MainEntityService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public List<ViewDTO> fetchMainEntityData(){
+    public List<ViewDTO> fetchMainEntityDataSortedBy(String value){
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<ViewDTO> query = cb.createQuery(ViewDTO.class);
 
@@ -45,7 +45,7 @@ public class MainEntityService {
                 )
         );
 
-        query.orderBy(cb.asc(root.get("value1")));
+        query.orderBy(cb.asc(root.get(value)));
 
         return entityManager.createQuery(query).getResultList();
     }
