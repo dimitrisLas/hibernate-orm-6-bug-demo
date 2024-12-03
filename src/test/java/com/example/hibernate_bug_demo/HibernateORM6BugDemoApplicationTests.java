@@ -20,6 +20,33 @@ class HibernateORM6BugDemoApplicationTests {
 	private MainEntityService mainEntityService;
 
 	@Test
+	void TestFetchMainEntityDataIsSortedByValueBelowSingleCbConstruct() {
+		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("paid");
+
+		assertNotNull(result, "Result should not be null");
+
+		for (int i=1; i<result.size();i++){
+			Long previousPaid = result.get(i-1).getFinancialInformation().getPaid();
+			Long currentPaid = result.get(i).getFinancialInformation().getPaid();
+			assertTrue(previousPaid <= currentPaid);
+		}
+	}
+
+
+	@Test
+	void TestFetchMainEntityDataIsSortedByValueBelowDoubleCbConstruct() {
+		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("number");
+
+		assertNotNull(result, "Result should not be null");
+
+		for (int i=1; i<result.size();i++){
+			Integer previousAddressNumber = result.get(i-1).getAddressInformation().getNumber();
+			Integer currentAddressNumber = result.get(i).getAddressInformation().getNumber();
+			assertTrue(previousAddressNumber <= currentAddressNumber);
+		}
+	}
+
+	@Test
 	void TestFetchMainEntityDataIsSortedByValue1() {
 		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("value1");
 
