@@ -70,7 +70,7 @@ class HibernateORM6BugDemoApplicationTests {
     }
 
     // This test case should fail because there are two cb.construct in front of the alphaNumber.
-    // It will sort on the gammaNumber instead of the number. (2 selects lower)
+    // It will sort on the gammaNumber instead of the alphaNumber. (2 selects lower)
     @Test
     void fetch_mainDTO_should_be_sorted_by_alphaNumber() {
         List<MainDTO> result = mainEntityService.fetchMainDTOSortedBy("alphaNumber");
