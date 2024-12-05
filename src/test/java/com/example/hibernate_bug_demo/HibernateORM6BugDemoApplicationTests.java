@@ -1,61 +1,103 @@
 package com.example.hibernate_bug_demo;
 
-import com.example.hibernate_bug_demo.dto.ViewDTO;
-import com.example.hibernate_bug_demo.service.MainEntityService;
+import com.example.hibernate_bug_demo.dto.MainDTO;
+import com.example.hibernate_bug_demo.entity.MainEntity;
+import com.example.hibernate_bug_demo.service.MainService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
 class HibernateORM6BugDemoApplicationTests {
 
-	@Autowired
-	private MainEntityService mainEntityService;
+    @Autowired
+    private MainService mainEntityService;
 
-	@Test
-	void TestFetchMainEntityDataIsSortedByValueBelowSingleCbConstruct() {
-		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("paid");
+    // This test case should succeed because there is no nested cb.construct used for the entity.
+    @Test
+    void fetch_mainEntity_should_be_sorted_by_paid() {
+        List<MainEntity> result = mainEntityService.fetchMainEntitySortedBy("paid");
 
-		assertNotNull(result, "Result should not be null");
+        assertOrdered(result, MainEntity::getPaid);
+    }
 
-		for (int i=1; i<result.size();i++){
-			Long previousPaid = result.get(i-1).getFinancialInformation().getPaid();
-			Long currentPaid = result.get(i).getFinancialInformation().getPaid();
-			assertTrue(previousPaid <= currentPaid);
-		}
-	}
+    // This test case should succeed because there is no cb.construct in front of the paid.
+    @Test
+    void fetch_mainDTO_should_be_sorted_by_paid() {
+        List<MainDTO> result = mainEntityService.fetchMainDTOSortedBy("paid");
 
+        assertOrdered(result, MainDTO::getPaid);
+    }
 
-	@Test
-	void TestFetchMainEntityDataIsSortedByValueBelowDoubleCbConstruct() {
-		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("number");
+    // This test case should succeed because there is no nested cb.construct used for the entity.
+    @Test
+    void fetch_mainEntity_should_be_sorted_by_number() {
+        List<MainEntity> result = mainEntityService.fetchMainEntitySortedBy("number");
 
-		assertNotNull(result, "Result should not be null");
+        assertUnordered(result, MainEntity::getAlphaNumber);
 
-		for (int i=1; i<result.size();i++){
-			Integer previousAddressNumber = result.get(i-1).getAddressInformation().getNumber();
-			Integer currentAddressNumber = result.get(i).getAddressInformation().getNumber();
-			assertTrue(previousAddressNumber <= currentAddressNumber);
-		}
-	}
+        assertOrdered(result, MainEntity::getNumber);
+    }
 
-	@Test
-	void TestFetchMainEntityDataIsSortedByValue1() {
-		List<ViewDTO> result = mainEntityService.fetchMainEntityDataSortedBy("value1");
+    // This test case should fail because there is a single cb.construct in front of the number.
+    // It will sort on the alphaNumber instead of the number. (1 select lower)
+    @Test
+    void fetch_mainDTO_should_be_sorted_by_number() {
+        List<MainDTO> result = mainEntityService.fetchMainDTOSortedBy("number");
 
-		assertNotNull(result, "Result should not be null");
+        // This will now succeed because it is what is being sorted on
+        assertOrdered(result, MainDTO::getAlphaNumber);
 
-		for (int i=1; i<result.size();i++){
-			Integer previousValue1 = result.get(i-1).getValue1();
-			Integer currentValue1 = result.get(i).getValue1();
-			assertTrue(previousValue1 <= currentValue1);
-		}
-	}
+        // This will fail because of the bug
+        assertOrdered(result, MainDTO::getNumber);
+    }
+
+    // This test case should succeed because there is no nested cb.construct used for the entity.
+    @Test
+    void fetch_mainEntity_should_be_sorted_by_alphaNumber() {
+        List<MainEntity> result = mainEntityService.fetchMainEntitySortedBy("alphaNumber");
+
+        assertOrdered(result, MainEntity::getAlphaNumber);
+        assertUnordered(result, MainEntity::getGammaNumber);
+    }
+
+    // This test case should fail because there are two cb.construct in front of the alphaNumber.
+    // It will sort on the gammaNumber instead of the number. (2 selects lower)
+    @Test
+    void fetch_mainDTO_should_be_sorted_by_alphaNumber() {
+        List<MainDTO> result = mainEntityService.fetchMainDTOSortedBy("alphaNumber");
+
+        // This will now succeed because it is what is being sorted on
+        assertOrdered(result, MainDTO::getGammaNumber);
+
+        // This will fail because of the bug
+        assertOrdered(result, MainDTO::getAlphaNumber);
+    }
+
+    private <T, R extends Comparable<R>> void assertUnordered(List<T> list, Function<T, R> keyExtractor) {
+        var isOrdered = isOrdered(list, keyExtractor);
+        assertFalse(isOrdered, "List was fully ordered: " + list.stream().map(keyExtractor).toList());
+    }
+
+    private <T, R extends Comparable<R>> void assertOrdered(List<T> list, Function<T, R> keyExtractor) {
+        var isOrdered = isOrdered(list, keyExtractor);
+        assertTrue(isOrdered, "List is not fully ordered: " + list.stream().map(keyExtractor).toList());
+    }
+
+    private <T, R extends Comparable<R>> Boolean isOrdered(List<T> list, Function<T, R> keyExtractor) {
+        return IntStream.range(1, list.size())
+                .allMatch(index -> {
+                    R previous = keyExtractor.apply(list.get(index - 1));
+                    R current = keyExtractor.apply(list.get(index));
+                    return previous.compareTo(current) <= 0;
+                });
+    }
 }
