@@ -4,29 +4,29 @@ import jakarta.persistence.*;
 
 @Entity
 public class MainEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-
     private Long paid;
     private Long received;
     private String address;
     private Integer number;
+    private Integer alphaNumber;
+    private Integer betaNumber;
+    private Integer gammaNumber;
 
-    private Integer value1;
-    private Integer value2;
-    private Integer value3;
+    public MainEntity() {}
 
-    public MainEntity(Long id, Long paid, Long received, String address, Integer number, Integer value1, Integer value2, Integer value3) {
+    public MainEntity(Long id, Long paid, Long received, String address, Integer number, Integer alphaNumber, Integer betaNumber, Integer gammaNumber) {
         this.id = id;
         this.paid = paid;
         this.received = received;
         this.address = address;
         this.number = number;
-        this.value1 = value1;
-        this.value2 = value2;
-        this.value3 = value3;
+        this.alphaNumber = alphaNumber;
+        this.betaNumber = betaNumber;
+        this.gammaNumber = gammaNumber;
     }
 
     public Long getId() {
@@ -69,27 +69,27 @@ public class MainEntity {
         this.number = number;
     }
 
-    public Integer getValue1() {
-        return value1;
+    public Integer getAlphaNumber() {
+        return alphaNumber;
     }
 
-    public void setValue1(Integer value1) {
-        this.value1 = value1;
+    public void setAlphaNumber(Integer value1) {
+        this.alphaNumber = value1;
     }
 
-    public Integer getValue2() {
-        return value2;
+    public Integer getBetaNumber() {
+        return betaNumber;
     }
 
-    public void setValue2(Integer value2) {
-        this.value2 = value2;
+    public void setBetaNumber(Integer value2) {
+        this.betaNumber = value2;
     }
 
-    public Integer getValue3() {
-        return value3;
+    public Integer getGammaNumber() {
+        return gammaNumber;
     }
 
-    public void setValue3(Integer value3) {
-        this.value3 = value3;
+    public void setGammaNumber(Integer value3) {
+        this.gammaNumber = value3;
     }
 }
